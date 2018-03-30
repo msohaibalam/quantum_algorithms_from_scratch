@@ -44,5 +44,21 @@ class TestGaussianElimination(unittest.TestCase):
         compare = [0, 1/3., 1/3., 1/3.]
         self.assertEqual(result, compare)
 
+    def test_gauss_eliminate_3vars_4eqns(self):
+        A = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3], [-4, 2, 4, -6]]
+        result = gauss_eliminate(A)
+        compare = [2, 3, -1]
+        self.assertEqual(result, compare)
+
+    def test_gauss_eliminate_3vars_5eqns(self):
+        A = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3], [-4, 2, 4, -6],
+            [6, 2, -4, 22]]
+        R = upper_rect_form(A)
+        solve_upper_rect_form(R)
+        # result = gauss_eliminate(A)
+        # compare = [2, 3, -1]
+        # self.assertEqual(result, compare)
+
+
 if __name__ == "__main__":
     unittest.main()
