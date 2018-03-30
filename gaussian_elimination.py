@@ -1,8 +1,8 @@
-def upper_rect_form(L):
+def row_echelon_form(L):
     '''
-    Input: A list of lists L, providing the augmented matrix of
-        the system of equations to solve
-    Output: Upper-rectangular form after row operations
+    Input: The augmented matrix of
+        the system of equations to solve (provided as a list of lists)
+    Output: Row echelon form of the matrix L
     '''
     num_rows = len(L)
     num_cols = len(L[0])
@@ -23,7 +23,7 @@ def upper_rect_form(L):
     return L
 
 
-def solve_upper_rect_form(R):
+def solve_row_echelon_form(R):
     '''
     Input: A list of lists R, providing the upper rectangular form
         of augmented matrix obtained via allowed row-operations
@@ -57,6 +57,14 @@ def gauss_eliminate(L):
         the system of equations to solve
     Ouput: Solution of the linear equations
     '''
-    R = upper_rect_form(L)
-    x = solve_upper_rect_form(R)
+    R = row_echelon_form(L)
+    x = solve_row_echelon_form(R)
     return x
+
+
+def rank(A):
+    '''
+    Computes the rank of matrix A
+    '''
+    R = row_echelon_form(A)
+    return len([l for l in R if set(l) != set([0])])
