@@ -106,5 +106,11 @@ class TestGaussianElimination(unittest.TestCase):
         compare = np.array([2, 3, -1])
         self.assertTrue(np.all(result == compare))
 
+    def test_rank_not_enough_eqns(self):
+        A = np.array([[2, 1, -1, 8], [-3, -1, 2, -11]], dtype=float)
+        result = rank(A)
+        compare = 2
+        self.assertEqual(result, compare)
+
 if __name__ == "__main__":
     unittest.main()

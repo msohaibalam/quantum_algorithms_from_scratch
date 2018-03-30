@@ -1,7 +1,8 @@
 def row_echelon_form(L):
     '''
     Input: The augmented matrix of
-        the system of equations to solve (provided as a list of lists)
+        the system of equations to solve
+        (provided as a list of lists, or a numpy array with dtype=float)
     Output: Row echelon form of the matrix L
     '''
     num_rows = len(L)
