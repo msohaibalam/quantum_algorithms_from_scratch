@@ -130,5 +130,33 @@ class TestGaussianElimination(unittest.TestCase):
         compare = [0.0, 1.0, 0.0]
         self.assertEqual(result, compare)
 
+    def test_remove_duplicate_row_echelon_form(self):
+        A = [[0, 0, 1, 0], [0, 0, 1, 0]]
+        result = remove_duplicate_row_echelon_form(A)
+        compare = [[0, 0, 1, 0]]
+        self.assertEqual(result, compare)
+
+    def test_remove_duplicate_row_echelon_form_array(self):
+        A = np.array([[0, 0, 1, 0], [0, 0, 1, 0]], dtype=float)
+        result = remove_duplicate_row_echelon_form(A)
+        compare = np.array([[0, 0, 1, 0]], dtype=float)
+        self.assertTrue(np.allclose(result, compare))
+
+    def test_example(self):
+        # A = [[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0]]
+        # result = row_echelon_form(A)
+
+        # A = [[1, 1, 0, 0], [0, -1.0, 0.0, 0.0]]
+        # result = solve_row_echelon_form(A)
+
+        # A = [[1, 0, 0, 0, 0], [0, 0, 0, 1, 0], [0, 0, 1, 0, 0]]
+        # result = row_echelon_form(A)
+
+        A = [[1, 1, 1, 0], [0, 1.0, 1.0, 0.0]]
+        # result = gauss_eliminate(A)
+        result = row_echelon_form(A)
+
+        print (result)
+
 if __name__ == "__main__":
     unittest.main()

@@ -41,6 +41,37 @@ def row_echelon_form(L):
                     L[k][j] = 0
                 else:
                     L[k][j] += c * L[i][j]
+
+    # remove any duplicate rows
+    L = remove_duplicate_row_echelon_form(L)
+
+    return L
+
+
+def remove_duplicate_row_echelon_form(L):
+    '''
+    Remove any duplicate rows, e.g. something like
+    [[0, 0, 1, 0]
+     [0, 0, 1, 0]] could still survive after the above process
+    Note: for full Gaussian elimination, we'd need to check whether one
+    row is a multiple of another; but since we're working with mod 2 addition,
+    we can make life simple for now and only check for equality
+    '''
+    num_rows = len(L)
+    i = 0
+    while i < num_rows:
+        j = i + 1
+        while j < num_rows:
+            if type(L) == list:
+                if L[i] == L[j]:
+                    del L[j]
+                    num_rows -= 1
+            elif type(L).__module__ == 'numpy':
+                if np.allclose(L[i], L[j]):
+                    L = np.delete(L, j, 0)
+                    num_rows -= 1
+            j += 1
+        i += 1
     return L
 
 
@@ -77,8 +108,30 @@ def solve_row_echelon_form(R):
     num_cols = len(R[0])
     # return list of Nones if not enough eqns for vars
     if num_rows < num_cols - 1:
-        print ("Not enough equations to solve all variables")
-        return [None for _ in range(num_rows)]
+        if num_rows == num_cols - 2:
+            # all rows have 0 in some columns: that variable is 1, all else 0
+            for col in range(num_cols - 1):
+                if set([R[row][col] for row in range(num_rows)]) == set([0]):
+                    x = [1 if i == col else 0 for i in range(num_cols - 1)]
+                    return x
+            # even no. of 1s in some row: this row is in span(solution)
+            # Example: given [[1, 1, 0, 0], [0, 1, 1, 0]], the solution
+            # is [1, 1, 1]
+            xlist = []
+            for row in range(num_rows):
+                if sum([R[row][col] for col in range(num_cols - 1)]) % 2 == 0:
+                    xtmp = [R[row][col] for col in range(num_cols - 1)]
+                    xlist.append(xtmp)
+            x = []
+            for ind in range(len(xlist[0])):
+                x.append(max([l[ind] for l in xlist]))
+            return x
+        else:
+            print ("Not enough equations to solve all variables")
+            return [None for _ in range(num_rows)]
+
+        # print ("Not enough equations to solve all variables")
+        # return [None for _ in range(num_rows)]
 
     # solve if enough eqns for vars
     x = [0 for _ in range(num_rows)]
