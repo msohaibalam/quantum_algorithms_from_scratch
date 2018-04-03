@@ -5,112 +5,58 @@ from gaussian_elimination import *
 
 class TestGaussianElimination(unittest.TestCase):
 
-    def test_row_echelon_form_3vars(self):
-        A = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]]
-        result = row_echelon_form(A)
-        compare = np.array([[-3, -1, 2, -11], [0, 1.6666666666666665, 0.6666666666666667, 4.333333333333333], [0, 0, 0.19999999999999987, -0.19999999999999984]])
-        self.assertTrue(np.allclose(result, compare))
+    def test_new_sample_msb_equal(self):
+        W = [[0, 1, 1, 0]]
+        z = [0, 1, 0, 0]
+        result = new_sample(W, z)
+        expected = [[0, 1, 1, 0], [0, 0, 1, 0]]
+        self.assertEqual(result, expected)
 
-    def test_solve_row_echelon_form_3vars(self):
-        R = [[2, 1, -1, 8], [0, 0.5, 0.5, 1.0], [0, 0, -1.0, 1.0]]
-        result = solve_row_echelon_form(R)
-        compare = [2, 3, -1]
-        self.assertEqual(result, compare)
+    def test_new_sample_msb_sandwiched(self):
+        W = [[1, 0, 0, 0, 0], [0, 0, 1, 0, 0]]
+        z = [0, 1, 1, 0, 0]
+        result = new_sample(W, z)
+        expected = [[1, 0, 0, 0, 0], [0, 1, 1, 0, 0], [0, 0, 1, 0, 0]]
+        self.assertEqual(result, expected)
 
-    def test_gauss_eliminate_3vars(self):
-        A = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]]
-        result = gauss_eliminate(A)
-        compare = np.array([2, 3, -1])
-        self.assertTrue(np.allclose(result, compare))
+    def test_new_sample_beginning(self):
+        W = [[0, 1, 1, 0, 0], [0, 0, 1, 0, 0]]
+        z = [1, 0, 1, 0, 0]
+        result = new_sample(W, z)
+        expected = [[1, 0, 1, 0, 0], [0, 1, 1, 0, 0], [0, 0, 1, 0, 0]]
+        self.assertEqual(result, expected)
 
-    def test_row_echelon_form_4vars(self):
-        A = [[1, 0, 1, -1, 0], [1, -1, 0, 1, 0], [1, 1, -1, 0, 0],
-            [0, 1, 1, 1, 1]]
-        result = row_echelon_form(A)
-        compare = [[1, 0, 1, -1, 0], [0, -1.0, -1.0, 2.0, 0.0],
-                   [0, 0, -3.0, 3.0, 0.0], [0, 0, 0, 3.0, 1.0]]
-        self.assertEqual(result, compare)
+    def test_new_sample_end(self):
+        W = [[0, 1, 1, 0, 0, 0], [0, 0, 1, 0, 1, 0]]
+        z = [0, 0, 0, 0, 1, 0]
+        result = new_sample(W, z)
+        expected = [[0, 1, 1, 0, 0, 0], [0, 0, 1, 0, 1, 0], [0, 0, 0, 0, 1, 0]]
+        self.assertEqual(result, expected)
 
-    def test_solve_row_echelon_form_4vars(self):
-        R = [[1, 0, 1, -1, 0], [0, -1.0, -1.0, 2.0, 0.0],
-            [0, 0, -3.0, 3.0, 0.0], [0, 0, 0, 3.0, 1.0]]
-        result = solve_row_echelon_form(R)
-        compare = [0, 1/3., 1/3., 1/3.]
-        self.assertEqual(result, compare)
+    def test_new_sample_no_add(self):
+        W = [[0, 1, 1, 0, 0], [0, 0, 1, 0, 0]]
+        z = [0, 1, 0, 0, 0]
+        result = new_sample(W, z)
+        expected = W
+        self.assertEqual(result, expected)
 
-    def test_gauss_eliminate_4vars(self):
-        A = [[1, 0, 1, -1, 0], [1, -1, 0, 1, 0], [1, 1, -1, 0, 0],
-            [0, 1, 1, 1, 1]]
-        result = gauss_eliminate(A)
-        compare = [0, 1/3., 1/3., 1/3.]
-        self.assertEqual(result, compare)
+    def test_complete_basis_middle(self):
+        A = [[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 0, 1, 0]]
+        result = complete_basis(A)
+        expected = [[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0], [0, 0, 0, 1, 0, 1], [0, 0, 0, 0, 1, 0]]
+        self.assertEqual(result, expected)
 
-    def test_gauss_eliminate_3vars_4eqns(self):
-        A = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3], [-4, 2, 4, -6]]
-        result = gauss_eliminate(A)
-        compare = np.array([2, 3, -1])
-        self.assertTrue(result, compare)
+    def test_complete_basis_end(self):
+        A = [[1, 0, 0, 0], [0, 1, 0, 0]]
+        result = complete_basis(A)
+        expected = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 1]]
+        self.assertEqual(result, expected)
 
-    def test_gauss_eliminate_3vars_5eqns(self):
-        A = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3], [-4, 2, 4, -6],
-            [6, 2, -4, 22]]
-        result = gauss_eliminate(A)
-        compare = np.array([2, 3, -1])
-        self.assertTrue(np.allclose(result, compare))
-
-    def test_rank_3vars(self):
-        A = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]]
-        result = rank(A)
-        compare = 3
-        self.assertEqual(result, compare)
-
-    def test_rank_4vars(self):
-        A = [[1, 0, 1, -1, 0], [1, -1, 0, 1, 0], [1, 1, -1, 0, 0],
-            [0, 1, 1, 1, 1]]
-        result = rank(A)
-        compare = 4
-        self.assertEqual(result, compare)
-
-    def test_rank_3vars_5eqns(self):
-        A = [[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3], [-4, 2, 4, -6],
-            [6, 2, -4, 22]]
-        result = rank(A)
-        compare = 3
-        self.assertEqual(result, compare)
-
-    def test_row_echelon_form_3vars_array(self):
-        A = np.array([[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3]], dtype=float)
-        result = row_echelon_form(A)
-        compare = np.array([[-3, -1, 2, -11], [0, 1.6666666666666665, 0.6666666666666667, 4.333333333333333], [0, 0, 0.19999999999999987, -0.19999999999999984]])
-        self.assertTrue(np.all(result == compare))
-
-    def test_row_echelon_form_4vars_array(self):
-        A = np.array([[1, 0, 1, -1, 0], [1, -1, 0, 1, 0], [1, 1, -1, 0, 0],
-                      [0, 1, 1, 1, 1]], dtype=float)
-        result = row_echelon_form(A)
-        compare = np.array([[1, 0, 1, -1, 0], [0, -1.0, -1.0, 2.0, 0.0],
-                            [0, 0, -3.0, 3.0, 0.0], [0, 0, 0, 3.0, 1.0]])
-        self.assertTrue(np.all(result == compare))
-
-    def test_rank_3vars_5eqns_array(self):
-        A = np.array([[2, 1, -1, 8], [-3, -1, 2, -11], [-2, 1, 2, -3], [-4, 2, 4, -6],
-                      [6, 2, -4, 22]], dtype=float)
-        result = rank(A)
-        compare = 3
-        self.assertEqual(result, compare)
-
-    def test_gauss_eliminate_3vars_4eqns_array(self):
-        A = np.array([[2, 1, -1, 8], [-3, -1, 2, -11],
-                      [-2, 1, 2, -3], [-4, 2, 4, -6]], dtype=float)
-        result = gauss_eliminate(A)
-        compare = np.array([2, 3, -1])
-        self.assertTrue(np.allclose(result, compare))
-
-    def test_rank_not_enough_eqns(self):
-        A = np.array([[2, 1, -1, 8], [-3, -1, 2, -11]], dtype=float)
-        result = rank(A)
-        compare = 2
-        self.assertEqual(result, compare)
+    def test_complete_basis_beginning(self):
+        A = [[0, 1, 1, 0], [0, 0, 1, 0]]
+        result = complete_basis(A)
+        expected = [[1, 0, 0, 1], [0, 1, 1, 0], [0, 0, 1, 0]]
+        self.assertEqual(result, expected)
 
     def test_rank_empty_list(self):
         A = []
@@ -118,45 +64,121 @@ class TestGaussianElimination(unittest.TestCase):
         compare = 0
         self.assertEqual(result, compare)
 
-    def test_complete_basis(self):
-        A = [[0, 0, 1, 0], [1, 0, 0, 0]]
-        result = gauss_eliminate(A)
-        compare = [0.0, 1.0, 0.0]
+    def test_rank_4by5(self):
+        A = [[1, 0, 1, -1, 0], [1, -1, 0, 1, 0], [1, 1, -1, 0, 0],
+            [0, 1, 1, 1, 0]]
+        result = rank(A)
+        compare = 4
         self.assertEqual(result, compare)
 
-    def test_complete_basis_array(self):
-        A = np.array([[0, 0, 1, 0], [1, 0, 0, 0]], dtype=float)
-        result = gauss_eliminate(A)
-        compare = [0.0, 1.0, 0.0]
-        self.assertEqual(result, compare)
+    def test_rank_zeroRow(self):
+        A = [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 0, 0]]
+        result = rank(A)
+        expected = 2
+        self.assertEqual(result, expected)
 
-    def test_remove_duplicate_row_echelon_form(self):
-        A = [[0, 0, 1, 0], [0, 0, 1, 0]]
-        result = remove_duplicate_row_echelon_form(A)
-        compare = [[0, 0, 1, 0]]
-        self.assertEqual(result, compare)
+    def test_period_001(self):
+        W = []
+        samples = [[0, 0, 0, 0], [0, 1, 0, 0], [1, 0, 0, 0], [1, 1, 0, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [0, 0, 1]
+        self.assertEqual(result, expected)
 
-    def test_remove_duplicate_row_echelon_form_array(self):
-        A = np.array([[0, 0, 1, 0], [0, 0, 1, 0]], dtype=float)
-        result = remove_duplicate_row_echelon_form(A)
-        compare = np.array([[0, 0, 1, 0]], dtype=float)
-        self.assertTrue(np.allclose(result, compare))
+    def test_period_010(self):
+        W = []
+        samples = [[0, 0, 0, 0], [0, 0, 1, 0], [1, 0, 0, 0], [1, 0, 1, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [0, 1, 0]
+        self.assertEqual(result, expected)
 
-    def test_example(self):
-        # A = [[1, 0, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0]]
-        # result = row_echelon_form(A)
+    def test_period_011(self):
+        W = []
+        samples = [[0, 0, 0, 0], [0, 1, 1, 0], [1, 0, 0, 0], [1, 1, 1, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [0, 1, 1]
+        self.assertEqual(result, expected)
 
-        # A = [[1, 1, 0, 0], [0, -1.0, 0.0, 0.0]]
-        # result = solve_row_echelon_form(A)
+    def test_period_100(self):
+        W = []
+        samples = [[0, 0, 0, 0], [0, 0, 1, 0], [0, 1, 0, 0], [0, 1, 1, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [1, 0, 0]
+        self.assertEqual(result, expected)
 
-        # A = [[1, 0, 0, 0, 0], [0, 0, 0, 1, 0], [0, 0, 1, 0, 0]]
-        # result = row_echelon_form(A)
+    def test_period_101(self):
+        W = []
+        samples = [[0, 0, 0, 0], [0, 1, 0, 0], [1, 0, 1, 0], [1, 1, 1, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [1, 0, 1]
+        self.assertEqual(result, expected)
 
-        A = [[1, 1, 1, 0], [0, 1.0, 1.0, 0.0]]
-        # result = gauss_eliminate(A)
-        result = row_echelon_form(A)
+    def test_period_110(self):
+        W = []
+        samples = [[0, 0, 0, 0], [0, 0, 1, 0], [1, 1, 0, 0], [1, 1, 1, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [1, 1, 0]
+        self.assertEqual(result, expected)
 
-        print (result)
+    def test_period_111(self):
+        W = []
+        samples = [[0, 0, 0, 0], [0, 1, 1, 0], [1, 0, 1, 0], [1, 1, 0, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [1, 1, 1]
+        self.assertEqual(result, expected)
+
+    def test_period_0001(self):
+        W = []
+        samples = [[0, 0, 0, 0, 0], [0, 0, 1, 0, 0], [0, 1, 0, 0, 0], [0, 1, 1, 0, 0],
+                   [1, 0, 0, 0, 0], [1, 0, 1, 0, 0], [1, 1, 0, 0, 0], [1, 1, 1, 0, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [0, 0, 0, 1]
+        self.assertEqual(result, expected)
+
+    def test_period_0010(self):
+        W = []
+        samples = [[0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [0, 1, 0, 0, 0], [0, 1, 0, 1, 0],
+                   [1, 0, 0, 0, 0], [1, 0, 0, 1, 0], [1, 1, 0, 0, 0], [1, 1, 0, 1, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [0, 0, 1, 0]
+        self.assertEqual(result, expected)
+
+    def test_period_0101(self):
+        W = []
+        samples = [[0, 0, 0, 0, 0], [0, 0, 1, 0, 0], [0, 1, 0, 1, 0], [0, 1, 1, 1, 0],
+                   [1, 0, 0, 0, 0], [1, 0, 1, 0, 0], [1, 1, 0, 1, 0], [1, 1, 1, 1, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [0, 1, 0, 1]
+        self.assertEqual(result, expected)
+
+    def test_period_1011(self):
+        W = []
+        samples = [[1, 1, 1, 0, 0], [1, 1, 0, 1, 0], [1, 0, 1, 0, 0], [1, 0, 0, 1, 0],
+                   [0, 1, 1, 1, 0], [0, 1, 0, 0, 0], [0, 0, 1, 1, 0], [0, 0, 0, 0, 0]]
+        for s in samples:
+            W = new_sample(W, s)
+        result = solve_reduced_row_echelon_form(W)
+        expected = [1, 0, 1, 1]
+        self.assertEqual(result, expected)
 
 if __name__ == "__main__":
     unittest.main()

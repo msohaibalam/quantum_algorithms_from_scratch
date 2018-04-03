@@ -1,174 +1,162 @@
 import numpy as np
 
 
-def row_echelon_form(L):
-    '''
-    Input: The augmented matrix of
-        the system of equations to solve
-        (provided as a list of lists, or a numpy array with dtype=float)
-    Output: Row echelon form of the matrix L
-    '''
-    num_rows = len(L)
-    # return None if empty list/array
-    if num_rows == 0:
-        return None
-    num_cols = len(L[0])
-    # Loop through columns, handling for non-square matrices as well
-    for i in range(min(num_cols, num_rows)):
-        # search for max in this column
-        max_el = abs(L[i][i])
-        max_row = i
-        for k in range(i + 1, num_rows):
-            if abs(L[k][i]) > max_el:
-                max_el = abs(L[k][i])
-                max_row = k
-
-        # swap max row with current row
-        for k in range(i, num_cols):
-            tmp = L[max_row][k]
-            L[max_row][k] = L[i][k]
-            L[i][k] = tmp
-
-        # making all cells below current cell 0
-        for k in range(i + 1, num_rows):
-            # calculate the multiplier
-            if L[i][i] == 0:
-                continue
-            c = - L[k][i]/L[i][i]
-            # multiply and add previous row to current row
-            for j in range(i, num_cols):
-                if i == j:
-                    L[k][j] = 0
-                else:
-                    L[k][j] += c * L[i][j]
-
-    # remove any duplicate rows
-    L = remove_duplicate_row_echelon_form(L)
-
-    return L
-
-
-def remove_duplicate_row_echelon_form(L):
-    '''
-    Remove any duplicate rows, e.g. something like
-    [[0, 0, 1, 0]
-     [0, 0, 1, 0]] could still survive after the above process
-    Note: for full Gaussian elimination, we'd need to check whether one
-    row is a multiple of another; but since we're working with mod 2 addition,
-    we can make life simple for now and only check for equality
-    '''
-    num_rows = len(L)
-    i = 0
-    while i < num_rows:
-        j = i + 1
-        while j < num_rows:
-            if type(L) == list:
-                if L[i] == L[j]:
-                    del L[j]
-                    num_rows -= 1
-            elif type(L).__module__ == 'numpy':
-                if np.allclose(L[i], L[j]):
-                    L = np.delete(L, j, 0)
-                    num_rows -= 1
-            j += 1
-        i += 1
-    return L
-
-
-def solve_row_echelon_form(R):
-    '''
-    Input: A list of lists R, providing the row echelon form
-        of augmented matrix obtained via allowed row-operations
-    Output: Solution of the linear equations
-        (provided as a list, or numpy array)
-    '''
-    num_rows = len(R)
-    # return None if empty list/array
-    if num_rows == 0:
-        return None
-    # check if not a square (non-augmented) matrix
-    num_cols = len(R[0])
-    if num_rows < num_cols - 1:
-
-        ## There are 2 scenarios here:
-        ## (a) One can complete the basis with a vector not orthogonal to s
-        ##  and solve (see section 18.13.2 in Quantum Computing for the Community College)
-        ## (b) We genuinely don't have enough equations to solve all variables
-
-        # loop through diagonal to check for situation (a)
-        for k in range(num_rows):
-            if R[k][k] == 0:
-                if type(R) == list:
-                    R = R[:k] + [[1 if ((kk == k) or (kk == num_cols - 1)) else 0 for kk in range(num_cols)]] + R[k:]
-                elif type(R).__module__ == np.__name__:
-                    R = np.vstack((np.vstack((R[:k], np.array([1 if ((kk == k) or (kk == num_cols - 1)) else 0 for kk in range(num_cols)], dtype=float))), R[k:]))
-
-    # recompute num_rows and num_cols
-    num_rows = len(R)
-    num_cols = len(R[0])
-    # return list of Nones if not enough eqns for vars
-    if num_rows < num_cols - 1:
-        if num_rows == num_cols - 2:
-            # all rows have 0 in some columns: that variable is 1, all else 0
-            for col in range(num_cols - 1):
-                if set([R[row][col] for row in range(num_rows)]) == set([0]):
-                    x = [1 if i == col else 0 for i in range(num_cols - 1)]
-                    return x
-            # even no. of 1s in some row: this row is in span(solution)
-            # Example: given [[1, 1, 0, 0], [0, 1, 1, 0]], the solution
-            # is [1, 1, 1]
-            xlist = []
-            for row in range(num_rows):
-                if sum([R[row][col] for col in range(num_cols - 1)]) % 2 == 0:
-                    xtmp = [R[row][col] for col in range(num_cols - 1)]
-                    xlist.append(xtmp)
-            x = []
-            for ind in range(len(xlist[0])):
-                x.append(max([l[ind] for l in xlist]))
-            return x
-        else:
-            print ("Not enough equations to solve all variables")
-            return [None for _ in range(num_rows)]
-
-        # print ("Not enough equations to solve all variables")
-        # return [None for _ in range(num_rows)]
-
-    # solve if enough eqns for vars
-    x = [0 for _ in range(num_rows)]
-    ## starting with bottom-most row, solve for all the variables
-    ## by back-substitution
-    for i in range(num_rows - 1, -1, -1):
-        # column q defined to handle the situation where num_rows >= num_cols
-        q = min(i, num_cols - 2)
-        # delete any extra variable placeholder(s)
-        if R[i][q] == 0:
-            del x[i]
-            continue
-        # solve for variable x[i], and back-substitute to previous equations
-        x[i] = R[i][num_cols - 1]/R[i][q]
-        for j in range(i - 1, -1, -1):
-            R[j][num_cols - 1] -= R[j][i] * x[i]
-
-    return x
-
-
-def gauss_eliminate(L):
-    '''
-    Input: A list of lists L, providing the augmented matrix of
-        the system of equations to solve
-    Ouput: Solution of the linear equations
-    '''
-    R = row_echelon_form(L)
-    x = solve_row_echelon_form(R)
-    return x
-
-
 def rank(A):
     '''
     Computes the rank of matrix A
+
+    :param list A: list of lists, representing matrix whose rank is to be computed
+    :return int: rank of the input matrix
     '''
-    R = row_echelon_form(A)
     # return 0 for empty list input
-    if R is None:
+    if A is None:
         return 0
-    return len([l for l in R if set(l) != set([0])])
+    # otherwise, count the number of non-zero rows
+    return len([l for l in A if set(l) != set([0])])
+
+
+def add_vec_mod2(v, w):
+    """
+    Mod 2 addition separately on each components of v and w
+
+    :params list/str v, w: bit-strings (or list representations) to be added mod 2
+    :return str: bit-wise mod 2 sum of the input strings/lists
+    """
+    if len(v) != len(w):
+        raise AssertionError("Input lengths unequal")
+    # convert strings into lists
+    if type(v) == str:
+        v_ = [int(s) for s in v]
+    if type(w) == str:
+        w_ = [int(s) for s in w]
+    else:
+        v_, w_ = v, w
+    vadd_mod2 = np.vectorize(lambda x, y: (x + y) % 2)
+    # return a bit-string
+    return ''.join([str(i) for i in vadd_mod2(v_, w_)])
+
+
+def msb(l):
+    """
+    Given a list of bits, find the most significant bit position, counting from right
+    E.g. For [0, 1, 0, 1], the output would be 2
+
+    :param list l: list containing bits
+    :return int: most significant bit position in the list
+    """
+    LtoR_index = min([i for i in range(len(l)) if l[i] == 1] or [-1])
+    return len(l) - 1 - LtoR_index
+
+
+def new_sample(W, z):
+    """
+    Given new sample z, loop until either z has been added to W, or z=0 produced
+
+    :param list W: list of lists, representing matrix in reduced row-echelon form,
+        or empty list
+    :param list z: new sample
+    :return list W: modified list of lists, with the new sample either added or
+        discarded
+    """
+    # sample z, producing/maintaing reduced row echelon form
+    for row in range(len(W)):
+        # replace z <- z +mod2 W[row] if msbs equal
+        if msb(W[row]) == msb(z):
+            z = [int(i) for i in add_vec_mod2(z, W[row])]
+        # insert non-zero z preserving reduced row echelon form
+        if (msb(z) > msb(W[row])) and (set(z) != set([0])):
+            W = W[:row] + [z] + W[row:]
+            break
+        if row == len(W)-1:
+            if (msb(z) < msb(W[row])) and (set(z) != set([0])):
+                W.append(z)
+            break
+
+    # append the very first sample
+    if (len(W) == 0) and (set(z) != set([0])):
+        W.append(z)
+
+    return W
+
+
+def complete_basis(A):
+    '''
+    Complete basis for matrix of rank (n-1) with a new vector not orthogonal to the
+    period vector
+
+    :param list A: lists of lists, representing matrix in reduced row-echelon form
+        of rank (n-1)
+    :return list A: modified list of lists, with all 1s along the diagonal
+    '''
+    # Starting from top row w_0, look for the lowest w_i which has its leading 1
+    # in column k, but w_(i+1) directly below it has a 0 in its (i+1)st position
+    num_rows = len(A)
+    num_cols = len(A[0])
+    for i in range(num_rows - 1):
+        if (A[i][i] == 1) and (A[i + 1][i + 1] == 0):
+            A = A[:i + 1] + [[1 if ((ii == i + 1) or (ii == num_cols - 1))
+                             else 0 for ii in range(num_cols)]] + A[i + 1:]
+
+    # if a new row has not been added, then either
+    # (a) W has all 1s on its diagonal, or
+    # (b) W has all 0s on its diagonal
+    new_num_rows = len(A)
+    new_num_cols = len(A[0])
+    if new_num_rows == num_rows:
+        # if (a), then complete basis at the end
+        if A[0][0] == 1:
+            new_row = [1 if ((ii == new_num_cols - 2) or (ii == new_num_cols - 1)) else 0
+                       for ii in range(new_num_cols)]
+            A.append(new_row)
+        # if (b), then complete basis at the beginning
+        elif A[0][0] == 0:
+            new_row = [1 if ((ii == 0) or (ii == new_num_cols - 1)) else 0
+                       for ii in range(new_num_cols)]
+            A = [new_row] + A
+
+    return A
+
+
+def back_substitue_mod2(A):
+    '''
+    Perform mod 2 back-substition, assuming reduced row-echelon form
+
+    :param list A: list of lists, representing matrix in reduced row-echelon form
+    :return list: solution resulting from mod 2 back-substition
+    '''
+    # starting with bottom-most row, solve for all variables via back-substitution
+    n = len(A)
+    x = [0 for _ in range(n)]
+    # loop along the diagonal
+    for i in range(n - 1, -1, -1):
+        # solve for variable x[i]
+        x[i] = A[i][n]
+        # back-substitute this solution to previous equations
+        for j in range(i - 1, -1, -1):
+            A[j][n] = (A[j][n] + (A[j][i] * x[i])) % 2
+
+    return x
+
+
+def solve_reduced_row_echelon_form(A):
+    '''
+    Solve the system of equations resulting from the reduced row-echelon form
+    of the input matrix, by first completing the basis, then solving by
+    mod-2 back-substitution
+
+    :param list A: list of lists, representing matrix in reduced row-echelon form
+    :return list: solution resulting from the system of equations, i.e. the period
+        vector
+    '''
+    # complete basis with vector not orthogonal to the period vector
+    A = complete_basis(A)
+    # ensure that matrix is now diagonal
+    if (len(A) != len(A[0]) - 1) or (set([A[i][i] for i in range(len(A))]) != set([1])):
+        print ("len(A): ", len(A))
+        print ("len(A[0]): ", len(A[0]))
+        print ("A: ", A)
+        raise ValueError("Matrix not in expected form, even after completing basis")
+    # solve by back-substitution
+    x = back_substitue_mod2(A)
+
+    return x
