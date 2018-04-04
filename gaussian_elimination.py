@@ -5,7 +5,8 @@ def rank(A):
     '''
     Computes the rank of matrix A
 
-    :param list A: list of lists, representing matrix whose rank is to be computed
+    :param list A: list of lists, representing matrix assumed to be in reduced
+        row-echelon form
     :return int: rank of the input matrix
     '''
     # return 0 for empty list input
@@ -20,7 +21,7 @@ def add_vec_mod2(v, w):
     Mod 2 addition separately on each components of v and w
 
     :params list/str v, w: bit-strings (or list representations) to be added mod 2
-    :return str: bit-wise mod 2 sum of the input strings/lists
+    :return str: component-wise mod 2 sum of the input strings/lists
     """
     if len(v) != len(w):
         raise AssertionError("Input lengths unequal")
